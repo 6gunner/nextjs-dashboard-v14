@@ -1,3 +1,5 @@
+'use client';
+
 import { lusitana } from '@/app/ui/fonts';
 import {
   AtSymbolIcon,
@@ -8,12 +10,22 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
 import { useFormState, useFormStatus } from 'react-dom';
 import { authenticate } from '@/app/lib/actions';
+import sha256 from 'crypto-js/sha256';
+import Base64 from 'crypto-js/enc-base64';
 
 export default function LoginForm() {
+  // react的useFormState, 传一个action，
   const [errorMessage, dispatch] = useFormState(authenticate, undefined);
 
+  const onSubmit = (formData) => {
+    const pwd = formData.get('password') as string;
+    const password = Base64.stringify(sha256(pwd));
+    formData.set('password', password);
+    dispatch(formData);
+  };
+
   return (
-    <form action={dispatch} className="space-y-3">
+    <form action={onSubmit} className="space-y-3">
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
         <h1 className={`${lusitana.className} mb-3 text-2xl`}>
           Please log in to continue.
@@ -81,6 +93,7 @@ export default function LoginForm() {
 }
 
 function LoginButton() {
+  // 这个组件需要再form里，才能用useFormStatus
   const { pending } = useFormStatus();
 
   return (
